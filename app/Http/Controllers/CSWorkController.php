@@ -39,7 +39,7 @@
 		    $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg,
-				'ev_data' => $CSWork
+				'eo_data' => $CSWork
 		  	];
 
 		    return response()->json($response, $error_code);
@@ -162,6 +162,7 @@
 	    	$error_code = 200;
 			$error_msg = Authentication::decodeToeken();
 
+
 			/* Authentication Failed */
 			if($error_msg){
 
@@ -197,7 +198,8 @@
 			else{
 				DB::statement('UPDATE cm_cs_zone_user SET status = 1 WHERE id = ?', array_values($request->all()));
 			}
-
+	
+			$error_msg = sizeof($request->all());
 	        $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg

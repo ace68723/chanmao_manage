@@ -11,7 +11,6 @@
 |
 */
 
-
 $app->get('/', function () use ($app) {
     return $app->version();
 });
@@ -52,6 +51,18 @@ $app->group(['prefix' => 'api/v1','namespace' => 'App\Http\Controllers'], functi
 
     // rr_role
     $app->get('rr_role', 'RRRoleController@roleCheck');
+
+    // cs_work
+    $app->get('cs_work', 'CSWorkController@index');
+
+    $app->post('cs_work', 'CSWorkController@createCSWork');
+
+    $app->put('cs_work','CSWorkController@updateCSWork');
+
+    $app->patch('cs_work','CSWorkController@deleteCSWork');
+
+    // cs_role
+    $app->get('cs_role', 'CSRoleController@index');
 
 });
 

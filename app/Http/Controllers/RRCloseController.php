@@ -35,7 +35,7 @@
 		    $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg,
-				'ev_data' => $RRClose
+				'eo_data' => $RRClose
 		  	];
 
 		    return response()->json($response, $error_code);
