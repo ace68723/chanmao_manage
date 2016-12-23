@@ -64,5 +64,13 @@ $app->group(['prefix' => 'api/v1','namespace' => 'App\Http\Controllers'], functi
     // cs_role
     $app->get('cs_role', 'CSRoleController@index');
 
+    // dr_work
+    $app->get('dr_work', 'DRWorkController@index');
+
+    $app->post('dr_work', 'DRWorkController@createDRWork');
+
+    $app->put('dr_work','DRWorkController@updateDRWork');
+
+    //$app->patch('dr_work','DRWorkController@deleteDRWork');
 });
 
