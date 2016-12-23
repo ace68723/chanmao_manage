@@ -22,13 +22,19 @@
         	$secret = self::getSecret();
 			
 			$headers = apache_request_headers();
-
+			
 			// Do Error check
 			try{
 				$jwt = $headers['Authortoken'];
 			}
 			catch(\Exception $e) {
-				return 'Cannot find header: Authortoken';
+
+				try{
+					$jwt = $headers['authortoken'];
+				}
+				catch(\Exception $e) {
+					return 'Cannot find header: Authortoken/authortoken';
+				}
 				
 			}
 
