@@ -26,7 +26,8 @@
 		    }
 		    else{
 				
-				$CSWork = DB::select('CALL DRWork');
+				$CSWork = DB::select('SELECT id, driver_id, wid, valid_from, valid_to, zone, comment
+										FROM cm_driver_zone_schedule');
 
 
 				foreach ($CSWork as &$work){
@@ -38,7 +39,7 @@
 		    $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg,
-				'eo_data' => $CSWork
+				'ea_data' => $CSWork
 		  	];
 
 		    return response()->json($response, $error_code);
@@ -86,9 +87,19 @@
 			}
 
 			else{
-				$obj = array('driver_id' => $request->driver_id, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone, 'comment' => $request->comment);
+				$obj = array('driver_id' => $request->driver_id, 'driver_id2' => $request->driver_id, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone, 'comment' => $request->comment);
 
-				DB::statement('CALL DRInsert(?, ?, ?, ?, ?)', array_values($obj));
+				DB::statement('INSERT INTO cm_driver_zone_schedule (driver_id, wid, valid_from, valid_to, zone, status, updated_by, updated_at, comment)
+								VALUES 
+								(?, 
+								(SELECT wid FROM cm_driver_base WHERE ? = driver_id),
+								?,
+								?,
+								?,
+								0,
+								0,
+								0,
+								?)', array_values($obj));
 			}
 
 		    $response = [
@@ -141,9 +152,17 @@
 
 			else{
 
-				$obj = array('id' => $request->id, 'driver_id' => $request->driver_id, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone, 'comment' => $request->comment);
+				$obj = array('driver_id' => $request->driver_id, 'driver_id2' => $request->driver_id, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone, 'comment' => $request->comment, 'id' => $request->id);
 				
-				DB::statement('CALL DRUpdate(?, ?, ?, ?, ?,?)', array_values($obj));
+				DB::statement('UPDATE cm_driver_zone_schedule
+								SET 
+								driver_id = ?, 
+								wid = (SELECT wid FROM cm_driver_base WHERE ? = driver_id),
+								valid_from = ?,
+								valid_to = ?,
+								zone = ?,
+								comment = ?
+								WHERE id = ?', array_values($obj));
 			}
 
 	        $response = [
@@ -197,10 +216,9 @@
 			}
 
 			else{
-				DB::statement('UPDATE cs_driver_zone_schedule SET status = 1 WHERE id = ?', array_values($request->all()));
+				DB::statement('UPDATE cm_driver_zone_schedule SET status = 1 WHERE id = ?', array_values($request->all()));
 			}
 	
-			$error_msg = sizeof($request->all());
 	        $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg

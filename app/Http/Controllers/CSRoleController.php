@@ -41,7 +41,7 @@
 		    $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg,
-				'eo_data' => $CSRole
+				'ea_data' => $CSRole
 		  	];
 
 		    return response()->json($response, $error_code);

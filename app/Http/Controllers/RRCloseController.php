@@ -28,14 +28,16 @@
 		    }
 		    else{
 				
-				$RRClose = DB::select('CALL get_rrclose');
+				$RRClose = DB::select('SELECT rc.id, rc.rid, rb.name, rc.start_time, rc.end_time 
+										FROM cm_rr_close rc JOIN cm_rr_base rb ON rc.rid = rb.rid 
+										ORDER BY start_time DESC LIMIT 30');
 				
 		    }
 
 		    $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg,
-				'eo_data' => $RRClose
+				'ea_data' => $RRClose
 		  	];
 
 		    return response()->json($response, $error_code);
@@ -81,7 +83,8 @@
 			}
 
 			else{
-				DB::statement('CALL insert_rrclose(?, ?, ?)', array_values($request->all()));
+				DB::statement('INSERT INTO cm_rr_close(rid, start_time, end_time) 
+								VALUES(?, ?, ?)', array_values($request->all()));
 			}
 
 		    $response = [
@@ -133,7 +136,12 @@
 			}
 
 			else{
-				DB::statement('CALL update_rrclose(?, ?, ?, ?)', array_values($request->all()));
+				DB::statement('UPDATE cm_rr_close
+								SET 
+								rid = ?, 
+								start_time = ?,
+								end_time = ?
+								WHERE id = ?', array_values($request->all()));
 			}
 
 	        $response = [

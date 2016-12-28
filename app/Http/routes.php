@@ -71,6 +71,6 @@ $app->group(['prefix' => 'api/v1','namespace' => 'App\Http\Controllers'], functi
 
     $app->put('dr_work','DRWorkController@updateDRWork');
 
-    //$app->patch('dr_work','DRWorkController@deleteDRWork');
+    $app->patch('dr_work','DRWorkController@deleteDRWork');
 });
 
