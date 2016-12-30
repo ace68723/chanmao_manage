@@ -5,18 +5,21 @@
 	use DB;
 	use App\Http\Controllers\Controller;
 	use Illuminate\Http\Request;
-	use App\Varification;
 	use App\Authentication;
+	use App\Calculation;
+	
 
 	class CSWorkController extends Controller{
-	  
+
 
 	    public function index(){
+
 
 			$ev_result = 0;
 			$error_code = 200;
 			$error_msg = Authentication::decodeToeken();
-			$CSWork = array();
+			$result = array();
+			
 
 			/* Authentication Failed */
 			if($error_msg){
@@ -27,10 +30,13 @@
 		    }
 		    else{
 				
-				$CSWork = DB::select('CALL CSWork');
+				$result = DB::select('SELECT cs.id, cs.uid, cr.username, cs.valid_from, cs.valid_to, cs.zone
+										FROM cm_cs_zone_user cs left join cm_user cr ON cs.uid = cr.uid
+										WHERE cs.status = 0
+										ORDER BY id DESC');
 
 
-				foreach ($CSWork as &$work){
+				foreach ($result as &$work){
 					$work->valid_from = date('Y-m-d H:i:s', $work->valid_from);
 					$work->valid_to = date('Y-m-d H:i:s', $work->valid_to);
 				} 
@@ -39,7 +45,7 @@
 		    $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg,
-				'eo_data' => $CSWork
+				'ea_data' => $result
 		  	];
 
 		    return response()->json($response, $error_code);
@@ -85,9 +91,12 @@
 			}
 
 			else{
+
 				$obj = array('uid' => $request->uid, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone);
 
-				DB::statement('CALL CSInsert(?, ?, ?, ?)', array_values($obj));
+				DB::statement('INSERT INTO 
+					cm_cs_zone_user(uid, valid_from, valid_to, zone, status, updated_at, updated_by)
+					VALUES (?, ?, ?, ?, 0, 0, 0)', array_values($obj));
 			}
 
 		    $response = [
@@ -140,9 +149,15 @@
 
 			else{
 
-				$obj = array('id' => $request->id, 'uid' => $request->uid, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone);
+				$obj = array('uid' => $request->uid, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone, 'id' => $request->id);
 				
-				DB::statement('CALL CSUpdate(?, ?, ?, ?, ?)', array_values($obj));
+				DB::statement('UPDATE cm_cs_zone_user
+								SET 
+								uid = ?,
+								valid_from = ?,
+								valid_to = ?,
+								zone = ?
+								WHERE ? = id', array_values($obj));
 			}
 
 	        $response = [
@@ -199,7 +214,6 @@
 				DB::statement('UPDATE cm_cs_zone_user SET status = 1 WHERE id = ?', array_values($request->all()));
 			}
 	
-			$error_msg = sizeof($request->all());
 	        $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg

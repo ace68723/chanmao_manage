@@ -7,6 +7,7 @@
 	use Illuminate\Http\Request;
 	use App\Varification;
 	use App\Authentication;
+	use App\Calculation;
 
 	class DRWorkController extends Controller{
 
@@ -25,20 +26,32 @@
 
 		    }
 		    else{
+
+		    	
+		    	// find today's date
+		    	$today = DB::select('SELECT UNIX_TIMESTAMP((SELECT CURDATE())) as `today`');
 				
-				$CSWork = DB::select('CALL DRWork');
+				$CSWork = DB::select('SELECT ds.id, ds.driver_id, ds.wid, ds.valid_from, ds.valid_to, ds.zone, ds.comment, db.driver_name, dz.name
+										FROM cm_driver_zone_schedule ds
+										LEFT JOIN cm_driver_base db ON ds.driver_id = db.driver_id
+										LEFT JOIN cm_driver_zone_base dz ON ds.zone = dz.zone
+										WHERE ds.status = 0 AND ds.valid_to >= ?
+										ORDER BY ds.valid_from DESC', array($today[0]->today));
 
 
+				
 				foreach ($CSWork as &$work){
 					$work->valid_from = date('Y-m-d H:i:s', $work->valid_from);
 					$work->valid_to = date('Y-m-d H:i:s', $work->valid_to);
-				} 
+
+				}
+
 		    }
 
 		    $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg,
-				'eo_data' => $CSWork
+				'ea_data' => $CSWork
 		  	];
 
 		    return response()->json($response, $error_code);
@@ -61,7 +74,7 @@
             
             
                 
-			elseif(sizeof($request->all()) != 5){
+			elseif(sizeof($request->all()) != 4){
 					
 				$ev_result = 1;
 				$error_code = 401;
@@ -69,7 +82,7 @@
 
 			}
 
-			elseif(!array_key_exists("driver_id", $request->all()) || !array_key_exists("valid_from", $request->all()) || !array_key_exists("valid_to", $request->all()) || !array_key_exists("zone", $request->all()) || !array_key_exists("comment", $request->all())){
+			elseif(!array_key_exists("driver_id", $request->all()) || !array_key_exists("valid_from", $request->all()) || !array_key_exists("valid_to", $request->all()) || !array_key_exists("zone", $request->all())){
 				
 				$ev_result = 1;
 				$error_code = 401;
@@ -77,7 +90,7 @@
 
 			}
 
-			elseif(!is_int($request->driver_id) || !is_string($request->valid_from) || !is_string($request->valid_to) || !is_int($request->zone) || !is_string($request->comment)) {
+			elseif(!is_int($request->driver_id) || !is_string($request->valid_from) || !is_string($request->valid_to) || !is_int($request->zone)) {
 				
 				$ev_result = 1;
 				$error_code = 401;
@@ -86,9 +99,19 @@
 			}
 
 			else{
-				$obj = array('driver_id' => $request->driver_id, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone, 'comment' => $request->comment);
+				$obj = array('driver_id' => $request->driver_id, 'driver_id2' => $request->driver_id, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone);
 
-				DB::statement('CALL DRInsert(?, ?, ?, ?, ?)', array_values($obj));
+				DB::statement('INSERT INTO cm_driver_zone_schedule (driver_id, wid, valid_from, valid_to, zone, status, updated_by, updated_at)
+								VALUES 
+								(?, 
+								(SELECT wid FROM cm_driver_base WHERE ? = driver_id),
+								?,
+								?,
+								?,
+								0,
+								0,
+								0
+								)', array_values($obj));
 			}
 
 		    $response = [
@@ -115,7 +138,7 @@
 
 			}
 
-			elseif(sizeof($request->all()) != 6){
+			elseif(sizeof($request->all()) != 5){
 					
 				$ev_result = 1;
 				$error_code = 401;
@@ -123,7 +146,7 @@
 
 			}
 
-			elseif(!array_key_exists("id", $request->all()) || !array_key_exists("driver_id", $request->all()) || !array_key_exists("valid_from", $request->all()) || !array_key_exists("valid_to", $request->all()) || !array_key_exists("zone", $request->all()) || !array_key_exists("comment", $request->all())){
+			elseif(!array_key_exists("id", $request->all()) || !array_key_exists("driver_id", $request->all()) || !array_key_exists("valid_from", $request->all()) || !array_key_exists("valid_to", $request->all()) || !array_key_exists("zone", $request->all())){
 				
 				$ev_result = 1;
 				$error_code = 401;
@@ -131,7 +154,7 @@
 
 			}
 
-			elseif(!is_int($request->id) || !is_int($request->driver_id) || !is_string($request->valid_from) || !is_string($request->valid_to) || !is_int($request->zone) || !is_string($request->comment)) {
+			elseif(!is_int($request->id) || !is_int($request->driver_id) || !is_string($request->valid_from) || !is_string($request->valid_to) || !is_int($request->zone)) {
 				
 				$ev_result = 1;
 				$error_code = 401;
@@ -141,9 +164,16 @@
 
 			else{
 
-				$obj = array('id' => $request->id, 'driver_id' => $request->driver_id, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone, 'comment' => $request->comment);
+				$obj = array('driver_id' => $request->driver_id, 'driver_id2' => $request->driver_id, 'valid_from' => strtotime($request->valid_from), 'valid_to' => strtotime($request->valid_to), 'zone' => $request->zone, 'id' => $request->id);
 				
-				DB::statement('CALL DRUpdate(?, ?, ?, ?, ?,?)', array_values($obj));
+				DB::statement('UPDATE cm_driver_zone_schedule
+								SET 
+								driver_id = ?, 
+								wid = (SELECT wid FROM cm_driver_base WHERE ? = driver_id),
+								valid_from = ?,
+								valid_to = ?,
+								zone = ?
+								WHERE id = ?', array_values($obj));
 			}
 
 	        $response = [
@@ -197,10 +227,9 @@
 			}
 
 			else{
-				DB::statement('UPDATE cs_driver_zone_schedule SET status = 1 WHERE id = ?', array_values($request->all()));
+				DB::statement('UPDATE cm_driver_zone_schedule SET status = 1 WHERE id = ?', array_values($request->all()));
 			}
 	
-			$error_msg = sizeof($request->all());
 	        $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg
@@ -210,6 +239,9 @@
 
 
 	    }
+
+
+
 	  
 	}
 ?>

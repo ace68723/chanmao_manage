@@ -28,14 +28,22 @@
 		    }
 		    else{
 				
-				$RRClose = DB::select('CALL get_rrclose');
+				$rrinfo = $this->getRRinfo();
+
+				$RRClose = DB::select('SELECT rc.id, rc.rid, rb.name, rc.start_time, rc.end_time 
+										FROM cm_rr_close rc JOIN cm_rr_base rb ON rc.rid = rb.rid 
+										ORDER BY rc.rid');
+
+				foreach($RRClose as &$close){
+					
+				}
 				
 		    }
 
 		    $response = [
 			  	'ev_result' => $ev_result,
 				'ev_message' => $error_msg,
-				'eo_data' => $RRClose
+				'ea_data' => $RRClose
 		  	];
 
 		    return response()->json($response, $error_code);
@@ -81,7 +89,8 @@
 			}
 
 			else{
-				DB::statement('CALL insert_rrclose(?, ?, ?)', array_values($request->all()));
+				DB::statement('INSERT INTO cm_rr_close(rid, start_time, end_time) 
+								VALUES(?, ?, ?)', array_values($request->all()));
 			}
 
 		    $response = [
@@ -133,7 +142,12 @@
 			}
 
 			else{
-				DB::statement('CALL update_rrclose(?, ?, ?, ?)', array_values($request->all()));
+				DB::statement('UPDATE cm_rr_close
+								SET 
+								rid = ?, 
+								start_time = ?,
+								end_time = ?
+								WHERE id = ?', array_values($request->all()));
 			}
 
 	        $response = [
@@ -144,6 +158,47 @@
 	        return response()->json($response, $error_code);
 
 
+	    }
+
+
+	    public function getRRInfo(){
+
+	    	$url = 'https://www.chanmao.ca/index.php?r=MobMonitor/Rrinfo';
+
+	    	$headers = apache_request_headers();
+			// Do Error check
+			try{
+				$jwt = $headers['Authortoken'];
+			}
+			catch(\Exception $e) {
+
+				try{
+					$jwt = $headers['authortoken'];
+				}
+				catch(\Exception $e) {
+					return 'Cannot find header: Authortoken/authortoken';
+				}
+				
+			}
+			$ch = curl_init($url);
+
+			curl_setopt_array($ch, array(
+			    CURLOPT_RETURNTRANSFER => TRUE,
+			    CURLOPT_HTTPHEADER => array(
+			        'Authortoken: ' . $jwt,
+			        'Content-Type: application/json'
+			    )
+			));
+
+			// Send the request
+			$response = curl_exec($ch);
+
+			// Check for errors
+			if($response === FALSE){
+			    die(curl_error($ch));
+			}
+
+			return $response;
 	    }
 	  
 	}
