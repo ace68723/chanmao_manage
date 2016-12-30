@@ -5,14 +5,15 @@
 	use DB;
 	use App\Http\Controllers\Controller;
 	use Illuminate\Http\Request;
-	use App\Varification;
 	use App\Authentication;
+	use App\Calculation;
 	
 
 	class CSWorkController extends Controller{
 
 
 	    public function index(){
+
 
 			$ev_result = 0;
 			$error_code = 200;

@@ -28,9 +28,15 @@
 		    }
 		    else{
 				
+				$rrinfo = $this->getRRinfo();
+
 				$RRClose = DB::select('SELECT rc.id, rc.rid, rb.name, rc.start_time, rc.end_time 
 										FROM cm_rr_close rc JOIN cm_rr_base rb ON rc.rid = rb.rid 
-										ORDER BY start_time DESC LIMIT 30');
+										ORDER BY rc.rid');
+
+				foreach($RRClose as &$close){
+					
+				}
 				
 		    }
 
@@ -152,6 +158,47 @@
 	        return response()->json($response, $error_code);
 
 
+	    }
+
+
+	    public function getRRInfo(){
+
+	    	$url = 'https://www.chanmao.ca/index.php?r=MobMonitor/Rrinfo';
+
+	    	$headers = apache_request_headers();
+			// Do Error check
+			try{
+				$jwt = $headers['Authortoken'];
+			}
+			catch(\Exception $e) {
+
+				try{
+					$jwt = $headers['authortoken'];
+				}
+				catch(\Exception $e) {
+					return 'Cannot find header: Authortoken/authortoken';
+				}
+				
+			}
+			$ch = curl_init($url);
+
+			curl_setopt_array($ch, array(
+			    CURLOPT_RETURNTRANSFER => TRUE,
+			    CURLOPT_HTTPHEADER => array(
+			        'Authortoken: ' . $jwt,
+			        'Content-Type: application/json'
+			    )
+			));
+
+			// Send the request
+			$response = curl_exec($ch);
+
+			// Check for errors
+			if($response === FALSE){
+			    die(curl_error($ch));
+			}
+
+			return $response;
 	    }
 	  
 	}

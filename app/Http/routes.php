@@ -62,7 +62,7 @@ $app->group(['prefix' => 'api/v1','namespace' => 'App\Http\Controllers'], functi
     $app->patch('cs_work','CSWorkController@deleteCSWork');
 
     // cs_role
-    $app->get('cs_role', 'CSRoleController@index');
+    $app->get('cs_role', 'RoleListController@CSRoles');
 
     // dr_work
     $app->get('dr_work', 'DRWorkController@index');
@@ -72,5 +72,10 @@ $app->group(['prefix' => 'api/v1','namespace' => 'App\Http\Controllers'], functi
     $app->put('dr_work','DRWorkController@updateDRWork');
 
     $app->patch('dr_work','DRWorkController@deleteDRWork');
+
+    // dr_list
+    $app->get('dr_list', 'RoleListController@DRList');
+
+
 });
 
