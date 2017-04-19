@@ -34,7 +34,7 @@
 
 	    	if($error_msg){
 	    		$response = [
-			  			'result' => 0,
+			  			'data' => 0,
 			  			'msg' => 'Create Post Failed',
 			  			'error' => $error_msg
 			  			];
@@ -74,7 +74,7 @@
 
 	    	if($error_msg){
 	    		$response = [
-			  			'result' => 0,
+			  			'data' => 0,
 			  			'msg' => 'Update Post Failed',
 			  			'error' => $error_msg
 			  			];

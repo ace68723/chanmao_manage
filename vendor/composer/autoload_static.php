@@ -53,6 +53,7 @@ class ComposerStaticInit33de73cd82e8d1e62a6faac7ec471ada
             'Symfony\\Component\\EventDispatcher\\' => 34,
             'Symfony\\Component\\Debug\\' => 24,
             'Symfony\\Component\\Console\\' => 26,
+            'Stripe\\' => 7,
         ),
         'P' => 
         array (
@@ -208,6 +209,10 @@ class ComposerStaticInit33de73cd82e8d1e62a6faac7ec471ada
         'Symfony\\Component\\Console\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/console',
+        ),
+        'Stripe\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/stripe/stripe-php/lib',
         ),
         'Psr\\Log\\' => 
         array (
