@@ -171,13 +171,14 @@
 				
 				$ev_result = 1;
 				$error_code = 401;
-				$error_msg = 'Field type incorrect';	
-
+				$error_msg = 'Field type incorrect';
+				
 			}
 
 			else{
+				$temp = array($request->rid, strtotime($request->start_time), strtotime($request->end_time));
 				DB::statement('INSERT INTO cm_rr_close(rid, start_time, end_time) 
-								VALUES(?, ?, ?)', array_values($request->all()));
+								VALUES(?, (SELECT FROM_UNIXTIME(?)), (SELECT FROM_UNIXTIME(?)))', $temp);
 			}
 
 		    $response = [
